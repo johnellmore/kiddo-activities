@@ -18,6 +18,7 @@
     body {
       margin: 0;
       background-color: white;
+      padding: 0 2em;
     }
 
     p {
@@ -26,9 +27,9 @@
 
     .intro {
       box-sizing: border-box;
-      max-width: 1000px;
-      margin: 0 auto 1.5em;
-      padding: 1em;
+      width: 100%;
+      margin: 0 0 1.5em 0;
+      padding: 1em 0;
       border-bottom: 1px solid #999;
     }
 
@@ -43,19 +44,19 @@
     .interface {
       display: flex;
       flex-wrap: wrap;
-      max-width: 1000px;
-      margin: auto;
+      width: 100%;
     }
 
     .interface .controls {
       box-sizing: border-box;
-      flex: 1 0 200px;
+      width: 300px;
+      flex-shrink: 0;
       padding: 1em;
     }
 
     .interface .preview {
       box-sizing: border-box;
-      flex: 1 0 400px;
+      flex: 1;
       padding: 1em;
     }
 
@@ -109,7 +110,7 @@
     }
 
     .page-thumbnail {
-      width: calc(33.333% - 1em);
+      width: 250px;
       margin: 0.5em;
       background-color: white;
       border: 1px solid #ccc;
@@ -149,23 +150,16 @@
 
     /* Mobile responsiveness */
     @media (max-width: 600px) {
+      body {
+        padding: 0 0.5em;
+      }
+
       .interface {
         flex-direction: column;
       }
 
-      .interface .controls,
-      .interface .preview {
-        flex: 1 1 auto;
-      }
-
-      .page-thumbnail {
-        width: calc(50% - 1em);
-      }
-    }
-
-    @media (max-width: 400px) {
-      .page-thumbnail {
-        width: calc(100% - 1em);
+      .interface .controls {
+        width: 100%;
       }
     }
   </style>
@@ -257,13 +251,27 @@
         type: type,
         svg: svg
       };
-      state.pages.push(page);
+      state.pages.unshift(page);  // Prepend instead of append
       renderPreview();
+      updatePrintButton();
     }
 
     function deletePage(id) {
       state.pages = state.pages.filter(page => page.id !== id);
       renderPreview();
+      updatePrintButton();
+    }
+
+    function updatePrintButton() {
+      const printBtn = document.getElementById('print-btn');
+      const count = state.pages.length;
+      if (count === 0) {
+        printBtn.textContent = 'Generate PDF';
+      } else if (count === 1) {
+        printBtn.textContent = 'Generate PDF (1 page)';
+      } else {
+        printBtn.textContent = `Generate PDF (${count} pages)`;
+      }
     }
 
     function renderPreview() {
@@ -326,10 +334,17 @@
     sliders.forEach(({ id, valueId }) => {
       const slider = document.getElementById(id);
       const valueDisplay = document.getElementById(valueId);
+
+      // Sync display with actual slider value on page load
+      valueDisplay.textContent = slider.value;
+
       slider.addEventListener('input', () => {
         valueDisplay.textContent = slider.value;
       });
     });
+
+    // Initialize print button text
+    updatePrintButton();
 
     // ============================================================================
     // ADD PAGE BUTTON
@@ -681,7 +696,6 @@
       const PAGE_WIDTH = 612;
       const PAGE_HEIGHT = 792;
       const MARGIN = 54; // 0.75 inch margins
-      const STROKE_WIDTH = 4;
 
       // Calculate available space
       const availableWidth = PAGE_WIDTH - (2 * MARGIN);
@@ -689,6 +703,10 @@
 
       // Calculate cell size based on height
       const cellSize = Math.floor(availableHeight / heightInCells);
+
+      // Calculate border width proportional to cell size
+      // At cell size 30, border width is 4 (ratio: 4/30 = 2/15)
+      const STROKE_WIDTH = cellSize * 2 / 15;
 
       // Calculate width based on available space
       const widthInCells = Math.floor(availableWidth / cellSize);
