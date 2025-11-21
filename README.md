@@ -2,6 +2,8 @@
 
 A web-based tool for generating printable activity pages for kids.
 
+[Try it out](https://kiddoactivities.johnellmore.com/)
+
 ## Features
 
 - **Three activity types:**
