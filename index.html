@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Kiddo Activities</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="data:," />
+  <style>
+    html {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+        "Segoe UI Symbol";
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    body {
+      margin: 0;
+      background-color: white;
+    }
+
+    p {
+      margin: 1.5em 0;
+    }
+
+    .intro {
+      box-sizing: border-box;
+      max-width: 1000px;
+      margin: 0 auto 1.5em;
+      padding: 1em;
+      border-bottom: 1px solid #999;
+    }
+
+    .intro h1 {
+      margin: 0 0 0.5em 0;
+    }
+
+    .intro p {
+      margin: 0;
+    }
+
+    .interface {
+      display: flex;
+      flex-wrap: wrap;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .interface .controls {
+      box-sizing: border-box;
+      flex: 1 0 200px;
+      padding: 1em;
+    }
+
+    .interface .preview {
+      box-sizing: border-box;
+      flex: 1 0 400px;
+      padding: 1em;
+    }
+
+    .controls fieldset {
+      margin-bottom: 1em;
+      border: 1px solid #ccc;
+    }
+
+    .controls legend {
+      font-weight: bold;
+      padding: 0 0.5em;
+    }
+
+    .controls label {
+      display: block;
+      margin-bottom: 0.5em;
+    }
+
+    .controls label > span {
+      display: block;
+      font-weight: normal;
+      margin-bottom: 0.25em;
+    }
+
+    .controls input[type="range"],
+    .controls select {
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 1em;
+    }
+
+    .controls input[type="range"] {
+      margin-top: 0.25em;
+    }
+
+    .controls button {
+      width: 100%;
+      padding: 0.5em 1em;
+      font-size: 1em;
+      margin-bottom: 0.5em;
+      cursor: pointer;
+    }
+
+    #preview-pages {
+      display: flex;
+      flex-wrap: wrap;
+      background-color: #eee;
+      margin: 1em -1em;
+      padding: 0.5em;
+      min-height: 200px;
+    }
+
+    .page-thumbnail {
+      width: calc(33.333% - 1em);
+      margin: 0.5em;
+      background-color: white;
+      border: 1px solid #ccc;
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    .page-thumbnail svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .page-thumbnail .delete-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border: 1px solid #999;
+      padding: 0.25em 0.5em;
+      cursor: pointer;
+      font-size: 0.8em;
+    }
+
+    .page-thumbnail .delete-btn:hover {
+      background-color: #ff6b6b;
+      color: white;
+    }
+
+    .activity-params {
+      display: none;
+    }
+
+    .activity-params.active {
+      display: block;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 600px) {
+      .interface {
+        flex-direction: column;
+      }
+
+      .interface .controls,
+      .interface .preview {
+        flex: 1 1 auto;
+      }
+
+      .page-thumbnail {
+        width: calc(50% - 1em);
+      }
+    }
+
+    @media (max-width: 400px) {
+      .page-thumbnail {
+        width: calc(100% - 1em);
+      }
+    }
+  </style>
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+</head>
+
+<body>
+  <div class="intro">
+    <h1>Kiddo Activities</h1>
+    <p>Create printable activity pages for kids!</p>
+  </div>
+
+  <div class="interface">
+    <div class="controls">
+      <fieldset>
+        <legend>Activity Type</legend>
+        <label>
+          <select id="activity-type">
+            <option value="maze">Maze</option>
+            <option value="math">Math Worksheet</option>
+            <option value="comic">Comic Book Frames</option>
+          </select>
+        </label>
+      </fieldset>
+
+      <!-- Maze parameters -->
+      <fieldset id="params-maze" class="activity-params active">
+        <legend>Maze Settings</legend>
+        <label>
+          <span>Height (cells): <span id="maze-height-value">25</span></span>
+          <input type="range" id="maze-height" min="5" max="70" value="25" />
+        </label>
+      </fieldset>
+
+      <!-- Math worksheet parameters -->
+      <fieldset id="params-math" class="activity-params">
+        <legend>Math Worksheet Settings</legend>
+        <label>
+          <span>Addition problems: <span id="math-addition-value">10</span></span>
+          <input type="range" id="math-addition" min="0" max="25" value="10" />
+        </label>
+        <label>
+          <span>Subtraction problems: <span id="math-subtraction-value">10</span></span>
+          <input type="range" id="math-subtraction" min="0" max="25" value="10" />
+        </label>
+        <label>
+          <span>Multiplication problems: <span id="math-multiplication-value">0</span></span>
+          <input type="range" id="math-multiplication" min="0" max="25" value="0" />
+        </label>
+        <label>
+          <span>Comparison problems: <span id="math-comparison-value">0</span></span>
+          <input type="range" id="math-comparison" min="0" max="25" value="0" />
+        </label>
+      </fieldset>
+
+      <!-- Comic frames parameters -->
+      <fieldset id="params-comic" class="activity-params">
+        <legend>Comic Frames Settings</legend>
+        <label>
+          <span>Rows per page: <span id="comic-rows-value">3</span></span>
+          <input type="range" id="comic-rows" min="2" max="5" value="3" />
+        </label>
+      </fieldset>
+
+      <button id="add-page-btn">Add Page</button>
+      <button id="print-btn">Generate PDF</button>
+    </div>
+
+    <div class="preview">
+      <div id="preview-pages">
+        <!-- Page thumbnails will be added here -->
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // ============================================================================
+    // PAGE MANAGEMENT
+    // ============================================================================
+
+    const state = {
+      pages: [],
+      nextId: 1
+    };
+
+    function addPage(type, svg) {
+      const page = {
+        id: state.nextId++,
+        type: type,
+        svg: svg
+      };
+      state.pages.push(page);
+      renderPreview();
+    }
+
+    function deletePage(id) {
+      state.pages = state.pages.filter(page => page.id !== id);
+      renderPreview();
+    }
+
+    function renderPreview() {
+      const container = document.getElementById('preview-pages');
+      container.innerHTML = '';
+
+      state.pages.forEach(page => {
+        const div = document.createElement('div');
+        div.className = 'page-thumbnail';
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.textContent = '×';
+        deleteBtn.onclick = () => deletePage(page.id);
+
+        div.innerHTML = page.svg;
+        div.appendChild(deleteBtn);
+        container.appendChild(div);
+      });
+    }
+
+    // ============================================================================
+    // ACTIVITY TYPE SELECTOR
+    // ============================================================================
+
+    const activityTypeSelect = document.getElementById('activity-type');
+
+    // Reset to default on page load
+    activityTypeSelect.value = 'maze';
+    document.querySelectorAll('.activity-params').forEach(el => {
+      el.classList.remove('active');
+    });
+    document.getElementById('params-maze').classList.add('active');
+
+    activityTypeSelect.addEventListener('change', () => {
+      // Hide all parameter fieldsets
+      document.querySelectorAll('.activity-params').forEach(el => {
+        el.classList.remove('active');
+      });
+
+      // Show the selected one
+      const selectedType = activityTypeSelect.value;
+      document.getElementById(`params-${selectedType}`).classList.add('active');
+    });
+
+    // ============================================================================
+    // SLIDER VALUE UPDATES
+    // ============================================================================
+
+    // Update slider value displays
+    const sliders = [
+      { id: 'maze-height', valueId: 'maze-height-value' },
+      { id: 'math-addition', valueId: 'math-addition-value' },
+      { id: 'math-subtraction', valueId: 'math-subtraction-value' },
+      { id: 'math-multiplication', valueId: 'math-multiplication-value' },
+      { id: 'math-comparison', valueId: 'math-comparison-value' },
+      { id: 'comic-rows', valueId: 'comic-rows-value' }
+    ];
+
+    sliders.forEach(({ id, valueId }) => {
+      const slider = document.getElementById(id);
+      const valueDisplay = document.getElementById(valueId);
+      slider.addEventListener('input', () => {
+        valueDisplay.textContent = slider.value;
+      });
+    });
+
+    // ============================================================================
+    // ADD PAGE BUTTON
+    // ============================================================================
+
+    document.getElementById('add-page-btn').addEventListener('click', () => {
+      const activityType = activityTypeSelect.value;
+      let svg = '';
+
+      switch (activityType) {
+        case 'maze':
+          const height = parseInt(document.getElementById('maze-height').value);
+          svg = generateMazeSVG(height);
+          break;
+        case 'math':
+          const addition = parseInt(document.getElementById('math-addition').value);
+          const subtraction = parseInt(document.getElementById('math-subtraction').value);
+          const multiplication = parseInt(document.getElementById('math-multiplication').value);
+          const comparison = parseInt(document.getElementById('math-comparison').value);
+          svg = generateMathWorksheetSVG(addition, subtraction, multiplication, comparison);
+          break;
+        case 'comic':
+          const rows = parseInt(document.getElementById('comic-rows').value);
+          svg = generateComicFramesSVG(rows);
+          break;
+      }
+
+      if (svg) {
+        addPage(activityType, svg);
+      }
+    });
+
+    // ============================================================================
+    // PDF GENERATION
+    // ============================================================================
+
+    document.getElementById('print-btn').addEventListener('click', async () => {
+      if (state.pages.length === 0) {
+        alert('Add some pages first!');
+        return;
+      }
+
+      try {
+        const pdfDoc = await PDFLib.PDFDocument.create();
+
+        // Add each page to the PDF
+        for (const page of state.pages) {
+          // Create a new page (US Letter: 612 x 792 points)
+          const pdfPage = pdfDoc.addPage([612, 792]);
+
+          // Parse the SVG and extract the path data
+          const parser = new DOMParser();
+          const svgDoc = parser.parseFromString(page.svg, 'image/svg+xml');
+          const paths = svgDoc.querySelectorAll('path');
+          const lines = svgDoc.querySelectorAll('line');
+          const rects = svgDoc.querySelectorAll('rect');
+          const texts = svgDoc.querySelectorAll('text');
+
+          // Draw each path element
+          paths.forEach(pathElement => {
+            const d = pathElement.getAttribute('d');
+            const strokeWidth = parseFloat(pathElement.getAttribute('stroke-width') || 1);
+            const transform = pathElement.parentElement?.getAttribute('transform') || '';
+
+            // Extract translation if present
+            let translateX = 0, translateY = 0;
+            const translateMatch = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+            if (translateMatch) {
+              translateX = parseFloat(translateMatch[1]);
+              translateY = parseFloat(translateMatch[2]);
+            }
+
+            // Apply transformation to the path
+            let transformedPath = d;
+            if (translateX !== 0 || translateY !== 0) {
+              // Create a temporary transform for the path (handle negative numbers)
+              transformedPath = d.replace(/([ML])\s*(-?[\d.]+),\s*(-?[\d.]+)/g, (match, cmd, x, y) => {
+                const newX = parseFloat(x) + translateX;
+                const newY = parseFloat(y) + translateY;
+                return `${cmd} ${newX},${newY}`;
+              });
+            }
+
+            pdfPage.drawSvgPath(transformedPath, {
+              x: 0,
+              y: 792,
+              borderColor: PDFLib.rgb(0, 0, 0),
+              borderWidth: strokeWidth,
+            });
+          });
+
+          // Draw each line element
+          lines.forEach(lineElement => {
+            const x1 = parseFloat(lineElement.getAttribute('x1'));
+            const y1 = parseFloat(lineElement.getAttribute('y1'));
+            const x2 = parseFloat(lineElement.getAttribute('x2'));
+            const y2 = parseFloat(lineElement.getAttribute('y2'));
+            const strokeWidth = parseFloat(lineElement.getAttribute('stroke-width') || 1);
+
+            pdfPage.drawLine({
+              start: { x: x1, y: 792 - y1 },
+              end: { x: x2, y: 792 - y2 },
+              thickness: strokeWidth,
+              color: PDFLib.rgb(0, 0, 0),
+            });
+          });
+
+          // Draw each rect element
+          rects.forEach(rectElement => {
+            const x = parseFloat(rectElement.getAttribute('x'));
+            const y = parseFloat(rectElement.getAttribute('y'));
+            const width = parseFloat(rectElement.getAttribute('width'));
+            const height = parseFloat(rectElement.getAttribute('height'));
+            const strokeWidth = parseFloat(rectElement.getAttribute('stroke-width') || 1);
+
+            pdfPage.drawRectangle({
+              x: x,
+              y: 792 - y - height,
+              width: width,
+              height: height,
+              borderColor: PDFLib.rgb(0, 0, 0),
+              borderWidth: strokeWidth,
+            });
+          });
+
+          // Draw each text element
+          for (const textElement of texts) {
+            const x = parseFloat(textElement.getAttribute('x'));
+            const y = parseFloat(textElement.getAttribute('y'));
+            const fontSize = parseFloat(textElement.getAttribute('font-size') || 12);
+            const textAnchor = textElement.getAttribute('text-anchor') || 'start';
+            const content = textElement.textContent;
+
+            // Embed font (using Helvetica as default)
+            const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+
+            // Calculate text width for anchoring
+            const textWidth = font.widthOfTextAtSize(content, fontSize);
+            let adjustedX = x;
+            if (textAnchor === 'middle') {
+              adjustedX = x - textWidth / 2;
+            } else if (textAnchor === 'end') {
+              adjustedX = x - textWidth;
+            }
+
+            pdfPage.drawText(content, {
+              x: adjustedX,
+              y: 792 - y,
+              size: fontSize,
+              font: font,
+              color: PDFLib.rgb(0, 0, 0),
+            });
+          }
+        }
+
+        // Save and download the PDF
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      } catch (error) {
+        console.error('PDF generation error:', error);
+        alert('Error generating PDF: ' + error.message);
+      }
+    });
+
+    // ============================================================================
+    // MAZE GENERATOR (ported from maze-generator project)
+    // ============================================================================
+
+    class MazeCellBoundary {
+      constructor(graph, firstId, secondId) {
+        this._graph = graph;
+        // make sure that cellA is always the cell with the lower ID
+        if (firstId < secondId) {
+          this._firstId = firstId;
+          this._secondId = secondId;
+        } else {
+          this._firstId = secondId;
+          this._secondId = firstId;
+        }
+      }
+
+      get firstId() {
+        return this._firstId;
+      }
+
+      get secondId() {
+        return this._secondId;
+      }
+
+      get borderingCells() {
+        return [
+          new MazeCell(this._graph, this.firstId),
+          new MazeCell(this._graph, this.secondId),
+        ];
+      }
+
+      get isWall() {
+        return this._graph.isWall(this);
+      }
+
+      set isWall(newValue) {
+        this._graph.setWall(this, newValue);
+      }
+
+      traverseFrom(cell) {
+        if (cell.id === this.firstId) {
+          return new MazeCell(this._graph, this.secondId);
+        } else {
+          return new MazeCell(this._graph, this.firstId);
+        }
+      }
+    }
+
+    class MazeCell {
+      constructor(graph, id) {
+        this._graph = graph;
+        this._id = id;
+      }
+
+      get graph() {
+        return this._graph;
+      }
+
+      get id() {
+        return this._id;
+      }
+
+      get boundaries() {
+        return this._graph.getNeighborIds(this._id)
+          .map(neighborId => new MazeCellBoundary(
+            this._graph,
+            this._id,
+            neighborId
+          ))
+      }
+
+      get neighbors() {
+        return this._graph.getNeighborIds(this._id)
+          .map(neighborId => new MazeCell(this._graph, neighborId))
+      }
+
+      boundaryBetween(cell) {
+        if (!this._graph.getNeighborIds(this._id).includes(cell.id)) {
+          throw new Error('Cannot get boundary; cells are not neighbors.')
+        }
+        return new MazeCellBoundary(this._graph, this._id, cell.id);
+      }
+    }
+
+    class SquareMazeGraph {
+      constructor(width, height) {
+        this._width = width;
+        this._height = height;
+        this._edges = new Uint8Array(width * height * 2);
+      }
+
+      get width() {
+        return this._width;
+      }
+
+      get height() {
+        return this._height;
+      }
+
+      get cells() {
+        return [...Array(this._width * this._height).keys()]
+          .map(id => new MazeCell(this, id));
+      }
+
+      get boundaries() {
+        return this.cells.flatMap(cell =>
+          cell.boundaries.filter(b => b.firstId === cell.id)
+        );
+      }
+
+      setAllBoundaries(shouldBeWalls) {
+        const fill = shouldBeWalls ? 1 : 0;
+        this._edges.fill(fill);
+      }
+
+      isWall(boundary) {
+        const addr = this._getWallAddress(
+          boundary.firstId,
+          boundary.secondId,
+        );
+        return !!this._edges[addr];
+      }
+
+      setWall(boundary, shouldBeWall) {
+        const addr = this._getWallAddress(
+          boundary.firstId,
+          boundary.secondId,
+        );
+        this._edges[addr] = shouldBeWall ? 1 : 0;
+      }
+
+      getNeighborIds(id) {
+        const x = id % this._width;
+        const y = Math.floor(id / this._width);
+        const toAddr = (x, y) => x + y * this._width;
+        return [
+          x > 0 ? toAddr(x - 1, y) : null,
+          y > 0 ? toAddr(x, y - 1) : null,
+          x < (this._width - 1) ? toAddr(x + 1, y) : null,
+          y < (this._height - 1) ? toAddr(x, y + 1) : null,
+        ].filter(x => x !== null);
+      }
+
+      _getWallAddress(smallerCellId, largerCellId) {
+        const areCellHorizontallyAdjacent = largerCellId - smallerCellId === 1;
+        return smallerCellId * 2 + (areCellHorizontallyAdjacent ? 1 : 0);
+      }
+    }
+
+    function pickRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function depthFirstSearch(maze) {
+      maze.setAllBoundaries(true);
+
+      const allCells = maze.cells;
+      const startCell = pickRandom(allCells);
+      const backtrackStack = [startCell];
+      const visitedIds = new Set([startCell.id]);
+
+      while (backtrackStack.length) {
+        const thisCell = backtrackStack.pop();
+        const unvisitedNeighbors = thisCell.neighbors
+          .filter(cell => !visitedIds.has(cell.id));
+
+        if (unvisitedNeighbors.length === 0) {
+          continue;
+        }
+
+        backtrackStack.push(thisCell);
+        const nextCell = pickRandom(unvisitedNeighbors);
+        visitedIds.add(nextCell.id);
+        backtrackStack.push(nextCell);
+        const wallToRemove = thisCell.boundaryBetween(nextCell);
+        wallToRemove.isWall = false;
+      }
+    }
+
+    function generateMazeSVG(heightInCells) {
+      // US Letter: 8.5" x 11" = 612pt x 792pt
+      const PAGE_WIDTH = 612;
+      const PAGE_HEIGHT = 792;
+      const MARGIN = 54; // 0.75 inch margins
+      const STROKE_WIDTH = 4;
+
+      // Calculate available space
+      const availableWidth = PAGE_WIDTH - (2 * MARGIN);
+      const availableHeight = PAGE_HEIGHT - (2 * MARGIN);
+
+      // Calculate cell size based on height
+      const cellSize = Math.floor(availableHeight / heightInCells);
+
+      // Calculate width based on available space
+      const widthInCells = Math.floor(availableWidth / cellSize);
+
+      // Create and generate the maze
+      const maze = new SquareMazeGraph(widthInCells, heightInCells);
+      depthFirstSearch(maze);
+
+      // Calculate actual maze dimensions
+      const mazeWidth = widthInCells * cellSize;
+      const mazeHeight = heightInCells * cellSize;
+
+      // Center the maze on the page
+      const offsetX = (PAGE_WIDTH - mazeWidth) / 2;
+      const offsetY = (PAGE_HEIGHT - mazeHeight) / 2;
+
+      // Helper function to convert cell ID to x,y coordinates
+      const cellIdToXY = (id) => [
+        id % maze.width,
+        Math.floor(id / maze.width)
+      ];
+
+      // Helper function to get boundary endpoints
+      const boundaryToEndpoints = (boundary) => {
+        if (boundary.secondId - boundary.firstId === 1) {
+          // cells are horizontally adjacent
+          const [cellX, cellY] = cellIdToXY(boundary.secondId);
+          return [
+            [cellX * cellSize, cellY * cellSize],
+            [cellX * cellSize, (cellY + 1) * cellSize],
+          ];
+        } else {
+          // cells are vertically adjacent
+          const [cellX, cellY] = cellIdToXY(boundary.secondId);
+          return [
+            [cellX * cellSize, cellY * cellSize],
+            [(cellX + 1) * cellSize, cellY * cellSize],
+          ];
+        }
+      };
+
+      // Build SVG path with extended endpoints to ensure corners meet
+      const bottom = maze.height * cellSize;
+      const right = maze.width * cellSize;
+      const halfStroke = STROKE_WIDTH / 2;
+
+      // Helper to extend line endpoints by half stroke width
+      const extendLine = (x1, y1, x2, y2) => {
+        if (x1 === x2) {
+          // Vertical line - extend y coordinates
+          const yMin = Math.min(y1, y2) - halfStroke;
+          const yMax = Math.max(y1, y2) + halfStroke;
+          return [x1, yMin, x1, yMax];  // Use same x for both points
+        } else {
+          // Horizontal line - extend x coordinates
+          const xMin = Math.min(x1, x2) - halfStroke;
+          const xMax = Math.max(x1, x2) + halfStroke;
+          return [xMin, y1, xMax, y1];  // Use same y for both points
+        }
+      };
+
+      let pathData = '';
+
+      // Draw maze outer edges (with opening at top-left and bottom-right)
+      // Left edge
+      let [x1, y1, x2, y2] = extendLine(0, 0, 0, bottom);
+      pathData += `M ${x1},${y1} L ${x2},${y2} `;
+
+      // Bottom edge (with gap)
+      [x1, y1, x2, y2] = extendLine(0, bottom, right - cellSize, bottom);
+      pathData += `M ${x1},${y1} L ${x2},${y2} `;
+
+      // Top edge (with gap)
+      [x1, y1, x2, y2] = extendLine(cellSize, 0, right, 0);
+      pathData += `M ${x1},${y1} L ${x2},${y2} `;
+
+      // Right edge
+      [x1, y1, x2, y2] = extendLine(right, 0, right, bottom);
+      pathData += `M ${x1},${y1} L ${x2},${y2} `;
+
+      // Draw internal walls
+      const walls = maze.boundaries.filter(b => b.isWall);
+      walls.forEach(boundary => {
+        const [[origX1, origY1], [origX2, origY2]] = boundaryToEndpoints(boundary);
+        [x1, y1, x2, y2] = extendLine(origX1, origY1, origX2, origY2);
+        pathData += `M ${x1},${y1} L ${x2},${y2} `;
+      });
+
+      return `<svg viewBox="0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(${offsetX}, ${offsetY})">
+          <path d="${pathData}" fill="none" stroke="black" stroke-width="${STROKE_WIDTH}" stroke-linecap="butt"/>
+        </g>
+      </svg>`;
+    }
+
+    // ============================================================================
+    // MATH WORKSHEET GENERATOR (ported from math-worksheet-cli)
+    // ============================================================================
+
+    function generateProblems(count, operation) {
+      const problems = [];
+      for (let i = 0; i < count; i++) {
+        let num1, num2;
+        switch (operation) {
+          case '+':
+            num1 = Math.floor(Math.random() * 10) + 1; // 1 to 10
+            num2 = Math.floor(Math.random() * 10) + 1; // 1 to 10
+            break;
+          case '-':
+            num1 = Math.floor(Math.random() * 10) + 1; // 1 to 10
+            num2 = Math.floor(Math.random() * num1) + 1; // 1 to num1 (ensures positive result)
+            break;
+          case '×':
+            num1 = Math.floor(Math.random() * 5) + 1; // 1 to 5
+            const maxFactor = Math.min(Math.floor(29 / num1), 12); // Ensure product < 30
+            num2 = Math.floor(Math.random() * maxFactor) + 1;
+            break;
+        }
+        problems.push({ num1, num2, operation });
+      }
+      return problems;
+    }
+
+    function generateComparisonProblems(count) {
+      const problems = [];
+      for (let i = 0; i < count; i++) {
+        const num1 = Math.floor(Math.random() * 10001); // 0 to 10,000
+        const num2 = Math.floor(Math.random() * 10001); // 0 to 10,000
+        problems.push({ num1, num2, operation: 'cmp' });
+      }
+      return problems;
+    }
+
+    function shuffleArray(array) {
+      // Fisher-Yates shuffle
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function generateMathWorksheetSVG(additionCount, subtractionCount, multiplicationCount, comparisonCount) {
+      const PAGE_WIDTH = 612;
+      const PAGE_HEIGHT = 792;
+      const MARGIN = 54; // 0.75 inch margins
+      const COLUMNS = 5;
+      const FONT_SIZE = 22;
+      const LINE_HEIGHT = 105; // Vertical spacing between problems
+
+      // Generate all problems
+      let allProblems = [];
+      allProblems = allProblems.concat(generateProblems(additionCount, '+'));
+      allProblems = allProblems.concat(generateProblems(subtractionCount, '-'));
+      allProblems = allProblems.concat(generateProblems(multiplicationCount, '×'));
+      allProblems = allProblems.concat(generateComparisonProblems(comparisonCount));
+
+      // Shuffle them
+      shuffleArray(allProblems);
+
+      // Calculate layout
+      const contentWidth = PAGE_WIDTH - (2 * MARGIN);
+      const columnWidth = contentWidth / COLUMNS;
+
+      let svgContent = '';
+      let currentCol = 0;
+      let currentRow = 0;
+
+      // Draw each problem
+      allProblems.forEach((problem) => {
+        // Comparison problems take 2 columns
+        const columnsNeeded = problem.operation === 'cmp' ? 2 : 1;
+
+        // Check if we need to wrap to next row
+        if (currentCol + columnsNeeded > COLUMNS) {
+          currentCol = 0;
+          currentRow++;
+        }
+
+        const leftEdge = MARGIN + (currentCol * columnWidth);
+        const baseY = MARGIN + (currentRow * LINE_HEIGHT) + 55;
+
+        if (problem.operation === 'cmp') {
+          // Comparison problem: spans 2 columns
+          const availableWidth = columnWidth * 2;
+          const boxSize = 24;
+
+          // Calculate widths
+          const num1Str = problem.num1.toString();
+          const num2Str = problem.num2.toString();
+          const num1Width = num1Str.length * 13;
+          const num2Width = num2Str.length * 13;
+          const totalWidth = num1Width + boxSize + num2Width + 16;
+          const startX = leftEdge + (availableWidth - totalWidth) / 2;
+
+          svgContent += `
+            <text x="${startX + num1Width}" y="${baseY}" text-anchor="end" font-size="${FONT_SIZE}" font-family="Arial, sans-serif">${num1Str}</text>
+            <rect x="${startX + num1Width + 4}" y="${baseY - boxSize + 4}" width="${boxSize}" height="${boxSize}" fill="none" stroke="black" stroke-width="1.5"/>
+            <text x="${startX + num1Width + boxSize + 8}" y="${baseY}" text-anchor="start" font-size="${FONT_SIZE}" font-family="Arial, sans-serif">${num2Str}</text>
+          `;
+
+          currentCol += 2;
+        } else {
+          // Arithmetic problem: vertical stacked format
+          const num1Str = problem.num1.toString();
+          const num2Str = problem.num2.toString();
+          const maxDigits = Math.max(num1Str.length, num2Str.length);
+
+          // Use fixed-width layout
+          const digitWidth = 14;
+          const problemWidth = (maxDigits + 1) * digitWidth + 10;
+          const startX = leftEdge + (columnWidth - problemWidth) / 2;
+          const rightEdge = startX + problemWidth;
+
+          svgContent += `
+            <text x="${rightEdge}" y="${baseY - 26}" text-anchor="end" font-size="${FONT_SIZE}" font-family="Courier, monospace">${num1Str}</text>
+            <text x="${startX + 2}" y="${baseY}" text-anchor="start" font-size="${FONT_SIZE}" font-family="Arial, sans-serif">${problem.operation}</text>
+            <text x="${rightEdge}" y="${baseY}" text-anchor="end" font-size="${FONT_SIZE}" font-family="Courier, monospace">${num2Str}</text>
+            <line x1="${startX}" y1="${baseY + 3}" x2="${rightEdge}" y2="${baseY + 3}" stroke="black" stroke-width="1.5"/>
+          `;
+
+          currentCol += 1;
+        }
+      });
+
+      return `<svg viewBox="0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
+        ${svgContent}
+      </svg>`;
+    }
+
+    // ============================================================================
+    // COMIC FRAMES GENERATOR (ported from comic-book-framer)
+    // ============================================================================
+
+    const PAGE_INNER_MARGIN = 0.03;
+    const PAGE_OUTER_MARGIN = 0.08;
+    const STROKE_WIDTH = 0.005;
+    const SEPARATORS = ['/', '|', '\\', '>', '<'];
+
+    class Page {
+      constructor(rows, innerMargin, outerMargin) {
+        this.rows = rows;
+        this.innerMargin = innerMargin;
+        this.outerMargin = outerMargin;
+      }
+    }
+
+    class PageRow {
+      constructor(panels) {
+        this.panels = panels;
+      }
+
+      get totalWidth() {
+        return this.panels.reduce((sum, panel) => sum + panel.width, 0);
+      }
+    }
+
+    class Panel {
+      constructor(width, leftBorderType, rightBorderType) {
+        this.width = width;
+        this.leftBorderType = leftBorderType;
+        this.rightBorderType = rightBorderType;
+      }
+    }
+
+    class Edger {
+      constructor(x, yMin, yMax, gutter) {
+        this.x = x;
+        this.yMin = yMin;
+        this.yMax = yMax;
+        this.gutter = gutter;
+      }
+
+      for(char) {
+        if (char === '|') return this.straight();
+        else if (char === '/') return this.forwardDiag();
+        else if (char === '\\') return this.backwardDiag();
+        else if (char === '>') return this.rightAngle();
+        else if (char === '<') return this.leftAngle();
+        throw new Error('Invalid separator type');
+      }
+
+      straight() {
+        return [[this.x, this.yMin], [this.x, this.yMax]];
+      }
+
+      forwardDiag() {
+        return [
+          [this.x + this.gutter, this.yMin],
+          [this.x - this.gutter, this.yMax],
+        ];
+      }
+
+      backwardDiag() {
+        return [
+          [this.x - this.gutter, this.yMin],
+          [this.x + this.gutter, this.yMax],
+        ];
+      }
+
+      rightAngle() {
+        return [
+          [this.x - this.gutter / 2, this.yMin],
+          [this.x + this.gutter / 2, (this.yMax - this.yMin) / 2 + this.yMin],
+          [this.x - this.gutter / 2, this.yMax],
+        ];
+      }
+
+      leftAngle() {
+        return [
+          [this.x + this.gutter / 2, this.yMin],
+          [this.x - this.gutter / 2, (this.yMax - this.yMin) / 2 + this.yMin],
+          [this.x + this.gutter / 2, this.yMax],
+        ];
+      }
+    }
+
+    function generateRandomPageRow() {
+      const rowWidths = [
+        [1],
+        [1, 1],
+        [1, 2],
+        [2, 1],
+        [1, 1, 1],
+      ];
+      const thisRowWidth = pickRandom(rowWidths).slice(); // copy array
+
+      let row = '' + thisRowWidth.shift();
+      for (const width of thisRowWidth) {
+        const sep = pickRandom(SEPARATORS);
+        row += sep + width;
+      }
+      return row;
+    }
+
+    function parseTemplate(tmpl) {
+      return tmpl.split("\n").map(rowTmpl => {
+        const chars = (rowTmpl + '|').split('');
+        let lastBorderType = '|';
+        let lastPanelWidth = null;
+        const panels = [];
+
+        for (const ch of chars) {
+          if (!isNaN(+ch)) { // if is numeric
+            lastPanelWidth = +ch;
+          } else if (SEPARATORS.includes(ch)) {
+            panels.push(new Panel(lastPanelWidth, lastBorderType, ch));
+            lastPanelWidth = null;
+            lastBorderType = ch;
+          }
+        }
+        return new PageRow(panels);
+      });
+    }
+
+    function pageToFrames(page, pageSizeWH) {
+      const [wPx, hPx] = pageSizeWH;
+      const outerMarginPx = page.outerMargin * wPx;
+      const innerMarginPx = page.innerMargin * wPx;
+      const offsetXPx = outerMarginPx;
+      const panelHeight = (hPx - (2 * outerMarginPx) - ((page.rows.length - 1) * innerMarginPx)) / page.rows.length;
+
+      const frames = page.rows.flatMap((row, i) => {
+        const offsetYPx = outerMarginPx + (i * (panelHeight + innerMarginPx));
+        const availablePanelWidth = wPx - (2 * outerMarginPx) - ((row.panels.length - 1) * innerMarginPx);
+        let rowOffsetXPx = offsetXPx;
+
+        const rowFrames = row.panels.map(panel => {
+          const [x, y] = [rowOffsetXPx, offsetYPx];
+          const panelWidth = availablePanelWidth / row.totalWidth * panel.width;
+          const leftEdge = new Edger(x, y, y + panelHeight, innerMarginPx);
+          const rightEdge = new Edger(x + panelWidth, y, y + panelHeight, innerMarginPx);
+          const frame = [
+            ...(leftEdge.for(panel.leftBorderType)),
+            ...(rightEdge.for(panel.rightBorderType).reverse()),
+          ];
+          rowOffsetXPx += panelWidth + innerMarginPx;
+          return frame;
+        });
+        return rowFrames;
+      });
+      return frames;
+    }
+
+    function renderFramesToSVG(polygons, pageWidth, pageHeight) {
+      let pathData = '';
+      polygons.forEach(points => {
+        const start = points[0];
+        pathData += `M ${start[0]},${start[1]} `;
+        for (let i = 1; i < points.length; i++) {
+          pathData += `L ${points[i][0]},${points[i][1]} `;
+        }
+        pathData += 'Z ';
+      });
+      return pathData;
+    }
+
+    function generateComicFramesSVG(numRows) {
+      const PAGE_WIDTH = 612;
+      const PAGE_HEIGHT = 792;
+
+      // Generate random template
+      const rows = [];
+      for (let i = 0; i < numRows; i++) {
+        rows.push(generateRandomPageRow());
+      }
+      const template = rows.join("\n");
+
+      // Parse template
+      const pageRows = parseTemplate(template);
+      const page = new Page(pageRows, PAGE_INNER_MARGIN, PAGE_OUTER_MARGIN);
+
+      // Generate frames
+      const frames = pageToFrames(page, [PAGE_WIDTH, PAGE_HEIGHT]);
+
+      // Render to SVG path
+      const pathData = renderFramesToSVG(frames, PAGE_WIDTH, PAGE_HEIGHT);
+
+      return `<svg viewBox="0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
+        <path d="${pathData}" fill="none" stroke="black" stroke-width="${STROKE_WIDTH * PAGE_WIDTH}" stroke-linejoin="miter"/>
+      </svg>`;
+    }
+  </script>
+</body>
+
+</html>
