@@ -205,11 +205,13 @@
     import * as mazeModule from './maze.js';
     import * as mathModule from './math.js';
     import * as comicModule from './comic.js';
+    import * as wordsearchModule from './wordsearch.js';
 
     const activityModules = [
       mazeModule,
       mathModule,
-      comicModule
+      comicModule,
+      wordsearchModule
     ];
 
     // Create lookup by ID
@@ -248,16 +250,39 @@
           const label = document.createElement('label');
 
           const span = document.createElement('span');
-          span.innerHTML = `${option.label}: <span id="${module.id}-${option.id}-value">${option.defaultValue}</span>`;
+          const optionType = option.type || 'range';
+
+          if (optionType === 'select') {
+            // For select, don't show value display
+            span.textContent = option.label;
+          } else {
+            // For range, show current value
+            span.innerHTML = `${option.label}: <span id="${module.id}-${option.id}-value">${option.defaultValue}</span>`;
+          }
           label.appendChild(span);
 
-          const input = document.createElement('input');
-          input.type = 'range';
-          input.id = `${module.id}-${option.id}`;
-          input.min = option.min;
-          input.max = option.max;
-          input.value = option.defaultValue;
-          label.appendChild(input);
+          if (optionType === 'select') {
+            const select = document.createElement('select');
+            select.id = `${module.id}-${option.id}`;
+            option.choices.forEach(choice => {
+              const optionEl = document.createElement('option');
+              optionEl.value = choice.value;
+              optionEl.textContent = choice.label;
+              if (choice.value === option.defaultValue) {
+                optionEl.selected = true;
+              }
+              select.appendChild(optionEl);
+            });
+            label.appendChild(select);
+          } else {
+            const input = document.createElement('input');
+            input.type = 'range';
+            input.id = `${module.id}-${option.id}`;
+            input.min = option.min;
+            input.max = option.max;
+            input.value = option.defaultValue;
+            label.appendChild(input);
+          }
 
           fieldset.appendChild(label);
         });
@@ -276,18 +301,21 @@
         document.getElementById(`params-${activityTypeSelect.value}`).classList.add('active');
       });
 
-      // Set up slider value displays
+      // Set up slider value displays (only for range inputs)
       activityModules.forEach(module => {
         module.options.forEach(option => {
-          const slider = document.getElementById(`${module.id}-${option.id}`);
-          const valueDisplay = document.getElementById(`${module.id}-${option.id}-value`);
+          const optionType = option.type || 'range';
+          if (optionType === 'range') {
+            const slider = document.getElementById(`${module.id}-${option.id}`);
+            const valueDisplay = document.getElementById(`${module.id}-${option.id}-value`);
 
-          // Sync display with actual slider value on page load
-          valueDisplay.textContent = slider.value;
-
-          slider.addEventListener('input', () => {
+            // Sync display with actual slider value on page load
             valueDisplay.textContent = slider.value;
-          });
+
+            slider.addEventListener('input', () => {
+              valueDisplay.textContent = slider.value;
+            });
+          }
         });
       });
     }
@@ -353,19 +381,24 @@
     // ADD PAGE BUTTON
     // ============================================================================
 
-    document.getElementById('add-page-btn').addEventListener('click', () => {
+    document.getElementById('add-page-btn').addEventListener('click', async () => {
       const activityType = document.getElementById('activity-type').value;
       const module = moduleById[activityType];
 
       // Collect parameter values
       const params = {};
       module.options.forEach(option => {
-        const slider = document.getElementById(`${module.id}-${option.id}`);
-        params[option.id] = parseInt(slider.value);
+        const input = document.getElementById(`${module.id}-${option.id}`);
+        const optionType = option.type || 'range';
+        if (optionType === 'select') {
+          params[option.id] = input.value;
+        } else {
+          params[option.id] = parseInt(input.value);
+        }
       });
 
-      // Generate SVG using the module
-      const svg = module.generate(params);
+      // Generate SVG using the module (handle both sync and async)
+      const svg = await module.generate(params);
 
       if (svg) {
         addPage(activityType, svg);
