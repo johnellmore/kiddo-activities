@@ -18,7 +18,10 @@ export const options = [
     type: 'select',
     choices: [
       { value: 'words-food.txt', label: 'Food' },
-      { value: 'words-thanksgiving.txt', label: 'Thanksgiving' }
+      { value: 'words-thanksgiving.txt', label: 'Thanksgiving' },
+      { value: 'words-christmas.txt', label: 'Christmas' },
+      { value: 'words-wingfeather.txt', label: 'Wingfeather' },
+      { value: 'words-winter.txt', label: 'Winter' },
     ],
     defaultValue: 'words-food.txt'
   }
